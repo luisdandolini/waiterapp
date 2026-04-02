@@ -19,7 +19,7 @@ export function OrderModal({ visible, isVisible, order }: OrderModalProps) {
   }, 0);
 
   return (
-    <Overlay>
+    <Overlay onClick={() => isVisible(!visible)}>
       <ModalBody>
         <header>
           <strong>Mesa {order.table}</strong>
