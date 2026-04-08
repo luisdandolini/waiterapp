@@ -2,14 +2,25 @@ import { Actions, ModalBody, OrderDetails, Overlay } from "./styles";
 import closeIcon from "../../assets/images/close-icon.svg";
 import type { Order } from "../../types/Order";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { api } from "../../utils/api";
 
 interface OrderModalProps {
   visible: boolean;
   isVisible: (visible: boolean) => void;
   order: Order | null;
+  onCancelOrder: () => void;
+  isLoading: boolean;
+  onChangeOrder: () => void;
 }
 
-export function OrderModal({ visible, isVisible, order }: OrderModalProps) {
+export function OrderModal({
+  visible,
+  isVisible,
+  order,
+  onCancelOrder,
+  isLoading,
+  onChangeOrder,
+}: OrderModalProps) {
   if (!visible || !order) {
     return null;
   }
@@ -53,7 +64,7 @@ export function OrderModal({ visible, isVisible, order }: OrderModalProps) {
             {order.products.map(({ _id, product, quantity }) => (
               <div className="item" key={_id}>
                 <img
-                  src={`http://localhost:3001/uploads/${product.imagePath}`}
+                  src={`${api.defaults.baseURL}/uploads/${product.imagePath}`}
                   alt={product.name}
                   width="48"
                   height="40"
@@ -76,12 +87,26 @@ export function OrderModal({ visible, isVisible, order }: OrderModalProps) {
         </OrderDetails>
 
         <Actions>
-          <button type="button" className="primary">
-            <span>👨‍🍳</span>
-            <strong>Iniciar Produção</strong>
-          </button>
+          {order.status !== "DONE" && (
+            <button
+              type="button"
+              className="primary"
+              disabled={isLoading}
+              onClick={onChangeOrder}
+            >
+              <span>{order.status === "WAITING" ? "👨‍🍳" : "✅"}</span>
+              <strong>
+                {order.status === "WAITING" ? "Iniciar Produção" : "Pronto"}
+              </strong>
+            </button>
+          )}
 
-          <button type="button" className="secondary">
+          <button
+            type="button"
+            className="secondary"
+            onClick={onCancelOrder}
+            disabled={isLoading}
+          >
             Cancelar Pedido
           </button>
         </Actions>

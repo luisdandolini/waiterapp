@@ -1,32 +1,55 @@
 import { Container } from "./styles";
 import { OrdersBoard } from "../OrdersBoard";
 import type { Order } from "../../types/Order";
-
-const orders: Order[] = [
-  {
-    _id: "69b96632dc3d65e7ae1c5ef4",
-    table: "123",
-    status: "WAITING",
-    products: [
-      {
-        product: {
-          name: "Pizza quatro queijos",
-          imagePath: "1773328419367-48098548-2c3e-41df-8a3b-2299a292015d.png",
-          price: 49,
-        },
-        quantity: 1,
-        _id: "69b96632dc3d65e7ae1c5ef5",
-      },
-    ],
-  },
-];
+import { useEffect, useState } from "react";
+import { api } from "../../utils/api";
 
 export function Orders() {
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    api.get("/orders").then(({ data }) => {
+      setOrders(data);
+    });
+  }, []);
+
+  function handleCancelOrder(orderId: string) {
+    setOrders((prevState) =>
+      prevState.filter((order) => order._id !== orderId),
+    );
+  }
+
+  function handleOrderStatusChange(orderId: string, status: Order["status"]) {
+    setOrders((prevState) =>
+      prevState.map((order) =>
+        order._id === orderId ? { ...order, status } : order,
+      ),
+    );
+  }
+
   return (
     <Container>
-      <OrdersBoard icon="🕟" title="Fila de espera" orders={orders} />
-      <OrdersBoard icon="👨‍🍳" title="Em preparação" orders={[]} />
-      <OrdersBoard icon="✅" title="Pronto!" orders={[]} />
+      <OrdersBoard
+        icon="🕟"
+        title="Fila de espera"
+        orders={orders.filter((order) => order.status === "WAITING")}
+        onCancelOrder={handleCancelOrder}
+        onChangeOrderStatus={handleOrderStatusChange}
+      />
+      <OrdersBoard
+        icon="👨‍🍳"
+        title="Em preparação"
+        orders={orders.filter((order) => order.status === "IN_PRODUCTION")}
+        onCancelOrder={handleCancelOrder}
+        onChangeOrderStatus={handleOrderStatusChange}
+      />
+      <OrdersBoard
+        icon="✅"
+        title="Pronto!"
+        orders={orders.filter((order) => order.status === "DONE")}
+        onCancelOrder={handleCancelOrder}
+        onChangeOrderStatus={handleOrderStatusChange}
+      />
     </Container>
   );
 }
